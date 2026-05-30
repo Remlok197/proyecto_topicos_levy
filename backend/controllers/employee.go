@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"proyecto-topicos-backend/config"
 	"proyecto-topicos-backend/models"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,29 @@ import (
 )
 
 // 1. GET
+// func GetEmployees(c *gin.Context) {
+// 	type EmployeeResponse struct {
+// 		EmpNo     int    `json:"employeeNumber"`
+// 		FirstName string `json:"firstName"`
+// 		LastName  string `json:"lastName"`
+// 		Title     string `json:"jobTitle"`
+// 		Salary    int    `json:"salary"`
+// 	}
+
+// 	var results []EmployeeResponse
+
+// 	// JOIN para traer el empleado y puesto actual
+// 	query := `
+// 		SELECT e.emp_no, e.first_name, e.last_name, t.title, s.salary
+// 		FROM employees e
+// 		JOIN titles t ON e.emp_no = t.emp_no
+// 		WHERE t.to_date = '9999-01-01'
+// 	`
+
+// 	config.DB.Raw(query).Scan(&results)
+// 	c.JSON(http.StatusOK, results)
+// }
+
 func GetEmployees(c *gin.Context) {
 	type EmployeeResponse struct {
 		EmpNo     int    `json:"employeeNumber"`
@@ -21,18 +45,39 @@ func GetEmployees(c *gin.Context) {
 		Salary    int    `json:"salary"`
 	}
 
+	// 1. Obtener parámetros de paginación de la URL (con valores por defecto)
+	// Si el usuario no manda nada, asumimos página 1 y límite de 50
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
+
+	// Evitar límites absurdos que puedan crashear la API
+	if limit > 100 {
+		limit = 100
+	}
+
+	// 2. Calcular el OFFSET (cuántos registros saltarse)
+	offset := (page - 1) * limit
+
 	var results []EmployeeResponse
 
-	// JOIN para traer el empleado y puesto actual
+	// 3. Modificar el query para incluir LIMIT y OFFSET
 	query := `
-		SELECT e.emp_no, e.first_name, e.last_name, t.title, s.salary
-		FROM employees e
-		JOIN titles t ON e.emp_no = t.emp_no
-		WHERE t.to_date = '9999-01-01'
-	`
+        SELECT e.emp_no, e.first_name, e.last_name, t.title, s.salary
+        FROM employees e
+        JOIN titles t ON e.emp_no = t.emp_no
+        JOIN salaries s ON e.emp_no = s.emp_no
+        WHERE t.to_date = '9999-01-01' AND s.to_date = '9999-01-01'
+        LIMIT ? OFFSET ?
+    `
 
-	config.DB.Raw(query).Scan(&results)
-	c.JSON(http.StatusOK, results)
+	// 4. Inyectar de forma segura las variables (evita SQL Injection)
+	config.DB.Raw(query, limit, offset).Scan(&results)
+
+	c.JSON(http.StatusOK, gin.H{
+		"page":  page,
+		"limit": limit,
+		"data":  results,
+	})
 }
 
 // 2. GET by ID
