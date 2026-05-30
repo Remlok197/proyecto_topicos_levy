@@ -5,6 +5,7 @@ services:
     image: mysql:8.0
     container_name: mysql_employees
     restart: always
+    command: --innodb_redo_log_capacity=1073741824
     environment:
       MYSQL_ROOT_PASSWORD: Qwertyz..
       MYSQL_DATABASE: employees_db
