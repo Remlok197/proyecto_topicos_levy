@@ -112,7 +112,7 @@ export default function Form() {
     { value: 'Marketing', label: 'Mercadotecnia (Marketing)' }
   ]
 
-  // Roles list 
+  // Roles list
   const roles = [
     { value: 'Developer', label: 'Desarrollador (Developer)' },
     { value: 'Designer', label: 'Diseñador (Designer)' },
