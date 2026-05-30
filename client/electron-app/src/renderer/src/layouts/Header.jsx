@@ -1,4 +1,4 @@
-import NavBar from "./NavBar";
+import NavBar from './NavBar'
 
 export default function Header() {
   return (
@@ -8,5 +8,5 @@ export default function Header() {
       </div>
       <NavBar />
     </header>
-  );
+  )
 }

@@ -1,7 +1,3 @@
-export default function HistorialPage(){
-    return (
-        <h1>
-            HISTORIAL
-        </h1>
-    );
+export default function HistorialPage() {
+  return <h1>HISTORIAL</h1>
 }
