@@ -1,7 +1,3 @@
-export default function BorrarPage(){
-    return (
-        <h1>
-            BORRAR
-        </h1>
-    );
+export default function BorrarPage() {
+  return <h1>BORRAR</h1>
 }
