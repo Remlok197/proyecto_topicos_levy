@@ -28,7 +28,7 @@ func NewEmployeeHandler(service services.EmployeeService) *EmployeeHandler {
 // @Param limit query int false "Límite de empleados" default(50)
 // @Success 200 {object} schemas.PaginatedEmployeesResponse "Lista de empleados paginada"
 // @Failure 500 {object} map[string]string "Error interno del servidor"
-// @Router /employees [get]
+// @Router /api/employees [get]
 func (h *EmployeeHandler) GetEmployees(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "50"))
@@ -51,7 +51,7 @@ func (h *EmployeeHandler) GetEmployees(c *gin.Context) {
 // @Success 200 {object} schemas.EmployeeDetailResponse "Detalles del empleado"
 // @Failure 400 {object} map[string]string "ID inválido"
 // @Failure 404 {object} map[string]string "Empleado no encontrado"
-// @Router /employees/{id} [get]
+// @Router /api/employees/{id} [get]
 func (h *EmployeeHandler) GetEmployee(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -79,7 +79,7 @@ func (h *EmployeeHandler) GetEmployee(c *gin.Context) {
 // @Success 201 {object} map[string]string "Empleado registrado"
 // @Failure 400 {object} map[string]string "Datos inválidos"
 // @Failure 500 {object} map[string]string "Error interno"
-// @Router /employees [post]
+// @Router /api/employees [post]
 func (h *EmployeeHandler) CreateEmployee(c *gin.Context) {
 	var req schemas.NewHireRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -106,7 +106,7 @@ func (h *EmployeeHandler) CreateEmployee(c *gin.Context) {
 // @Success 200 {object} map[string]string "Historial actualizado"
 // @Failure 400 {object} map[string]string "JSON o ID inválido"
 // @Failure 500 {object} map[string]string "Error interno"
-// @Router /employees/{id} [put]
+// @Router /api/employees/{id} [put]
 func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)
@@ -138,7 +138,7 @@ func (h *EmployeeHandler) UpdateEmployee(c *gin.Context) {
 // @Success 200 {object} map[string]string "Baja lógica exitosa"
 // @Failure 400 {object} map[string]string "ID inválido"
 // @Failure 500 {object} map[string]string "Error interno"
-// @Router /employees/{id} [delete]
+// @Router /api/employees/{id} [delete]
 func (h *EmployeeHandler) DeleteEmployee(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.Atoi(idStr)

@@ -1,15 +1,15 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "API REST para la gestión de empleados en el sistema (Práctica 3).",
+        "description": "API REST para la gestión de empleados (MySQl test_db).",
         "title": "Employees API",
         "contact": {},
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/api",
+    "basePath": "/",
     "paths": {
-        "/employees": {
+        "/api/employees": {
             "get": {
                 "description": "Retorna los empleados con su salario y título actual, con paginación opcional",
                 "produces": [
@@ -107,7 +107,7 @@
                 }
             }
         },
-        "/employees/{id}": {
+        "/api/employees/{id}": {
             "get": {
                 "description": "Retorna un solo empleado y sus detalles históricos",
                 "produces": [

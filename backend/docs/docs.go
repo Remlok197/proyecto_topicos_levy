@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/employees": {
+        "/api/employees": {
             "get": {
                 "description": "Retorna los empleados con su salario y título actual, con paginación opcional",
                 "produces": [
@@ -113,7 +113,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/employees/{id}": {
+        "/api/employees/{id}": {
             "get": {
                 "description": "Retorna un solo empleado y sus detalles históricos",
                 "produces": [
@@ -450,7 +450,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Employees API",
 	Description:      "API REST para la gestión de empleados (MySQl test_db).",
