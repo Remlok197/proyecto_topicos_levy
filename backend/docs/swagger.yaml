@@ -1,0 +1,297 @@
+basePath: /api
+definitions:
+  schemas.EmployeeDetailResponse:
+    properties:
+      personal_info:
+        $ref: '#/definitions/schemas.EmployeeInfoResponse'
+      salary_history:
+        items:
+          $ref: '#/definitions/schemas.SalaryResponse'
+        type: array
+      titles_history:
+        items:
+          $ref: '#/definitions/schemas.TitleResponse'
+        type: array
+    type: object
+  schemas.EmployeeInfoResponse:
+    properties:
+      birth_date:
+        type: string
+      emp_no:
+        type: integer
+      first_name:
+        type: string
+      gender:
+        type: string
+      hire_date:
+        type: string
+      last_name:
+        type: string
+    type: object
+  schemas.EmployeeSummaryResponse:
+    properties:
+      employeeNumber:
+        type: integer
+      firstName:
+        type: string
+      jobTitle:
+        type: string
+      lastName:
+        type: string
+      salary:
+        type: integer
+    type: object
+  schemas.NewHireRequest:
+    properties:
+      birth_date:
+        type: string
+      dept_no:
+        type: string
+      emp_no:
+        type: integer
+      first_name:
+        maxLength: 14
+        type: string
+      gender:
+        enum:
+        - M
+        - F
+        type: string
+      hire_date:
+        type: string
+      last_name:
+        maxLength: 16
+        type: string
+      salary:
+        type: integer
+      title:
+        maxLength: 50
+        type: string
+    required:
+    - birth_date
+    - dept_no
+    - emp_no
+    - first_name
+    - gender
+    - hire_date
+    - last_name
+    - salary
+    - title
+    type: object
+  schemas.PaginatedEmployeesResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/schemas.EmployeeSummaryResponse'
+        type: array
+      limit:
+        type: integer
+      page:
+        type: integer
+    type: object
+  schemas.SalaryResponse:
+    properties:
+      from_date:
+        type: string
+      salary:
+        type: integer
+      to_date:
+        type: string
+    type: object
+  schemas.TitleResponse:
+    properties:
+      from_date:
+        type: string
+      title:
+        type: string
+      to_date:
+        type: string
+    type: object
+  schemas.UpdateEmployeeRequest:
+    properties:
+      dept_no:
+        type: string
+      salary:
+        type: integer
+      title:
+        maxLength: 50
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API REST para la gestión de empleados en el sistema (Práctica 3).
+  title: Employees API
+  version: "1.0"
+paths:
+  /employees:
+    get:
+      description: Retorna los empleados con su salario y título actual, con paginación
+        opcional
+      parameters:
+      - default: 1
+        description: Página
+        in: query
+        name: page
+        type: integer
+      - default: 50
+        description: Límite de empleados
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Lista de empleados paginada
+          schema:
+            $ref: '#/definitions/schemas.PaginatedEmployeesResponse'
+        "500":
+          description: Error interno del servidor
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Obtiene la lista de empleados
+      tags:
+      - employees
+    post:
+      consumes:
+      - application/json
+      description: Da de alta a un empleado en la base de datos
+      parameters:
+      - description: Datos del empleado
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.NewHireRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Empleado registrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: Datos inválidos
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Registra un nuevo empleado
+      tags:
+      - employees
+  /employees/{id}:
+    delete:
+      description: Da de baja a un empleado y cierra sus historiales de salario/título
+      parameters:
+      - description: ID del Empleado
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Baja lógica exitosa
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: ID inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Baja lógica de un empleado
+      tags:
+      - employees
+    get:
+      description: Retorna un solo empleado y sus detalles históricos
+      parameters:
+      - description: ID del Empleado
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Detalles del empleado
+          schema:
+            $ref: '#/definitions/schemas.EmployeeDetailResponse'
+        "400":
+          description: ID inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Empleado no encontrado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Obtiene un empleado por su ID
+      tags:
+      - employees
+    put:
+      consumes:
+      - application/json
+      description: Actualiza el salario y/o título de un empleado, manteniendo el
+        historial (Type 2 SCD)
+      parameters:
+      - description: ID del Empleado
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Nuevos datos a actualizar
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/schemas.UpdateEmployeeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Historial actualizado
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: JSON o ID inválido
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Error interno
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Actualiza el historial laboral
+      tags:
+      - employees
+swagger: "2.0"

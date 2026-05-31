@@ -1,0 +1,441 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API REST para la gestión de empleados en el sistema (Práctica 3).",
+        "title": "Employees API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/employees": {
+            "get": {
+                "description": "Retorna los empleados con su salario y título actual, con paginación opcional",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employees"
+                ],
+                "summary": "Obtiene la lista de empleados",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Página",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 50,
+                        "description": "Límite de empleados",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Lista de empleados paginada",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.PaginatedEmployeesResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno del servidor",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Da de alta a un empleado en la base de datos",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employees"
+                ],
+                "summary": "Registra un nuevo empleado",
+                "parameters": [
+                    {
+                        "description": "Datos del empleado",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.NewHireRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Empleado registrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Datos inválidos",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/employees/{id}": {
+            "get": {
+                "description": "Retorna un solo empleado y sus detalles históricos",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employees"
+                ],
+                "summary": "Obtiene un empleado por su ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID del Empleado",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detalles del empleado",
+                        "schema": {
+                            "$ref": "#/definitions/schemas.EmployeeDetailResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Empleado no encontrado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Actualiza el salario y/o título de un empleado, manteniendo el historial (Type 2 SCD)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employees"
+                ],
+                "summary": "Actualiza el historial laboral",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID del Empleado",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Nuevos datos a actualizar",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/schemas.UpdateEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Historial actualizado",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "JSON o ID inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Da de baja a un empleado y cierra sus historiales de salario/título",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employees"
+                ],
+                "summary": "Baja lógica de un empleado",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "ID del Empleado",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Baja lógica exitosa",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID inválido",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Error interno",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "schemas.EmployeeDetailResponse": {
+            "type": "object",
+            "properties": {
+                "personal_info": {
+                    "$ref": "#/definitions/schemas.EmployeeInfoResponse"
+                },
+                "salary_history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schemas.SalaryResponse"
+                    }
+                },
+                "titles_history": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schemas.TitleResponse"
+                    }
+                }
+            }
+        },
+        "schemas.EmployeeInfoResponse": {
+            "type": "object",
+            "properties": {
+                "birth_date": {
+                    "type": "string"
+                },
+                "emp_no": {
+                    "type": "integer"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "hire_date": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.EmployeeSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "employeeNumber": {
+                    "type": "integer"
+                },
+                "firstName": {
+                    "type": "string"
+                },
+                "jobTitle": {
+                    "type": "string"
+                },
+                "lastName": {
+                    "type": "string"
+                },
+                "salary": {
+                    "type": "integer"
+                }
+            }
+        },
+        "schemas.NewHireRequest": {
+            "type": "object",
+            "required": [
+                "birth_date",
+                "dept_no",
+                "emp_no",
+                "first_name",
+                "gender",
+                "hire_date",
+                "last_name",
+                "salary",
+                "title"
+            ],
+            "properties": {
+                "birth_date": {
+                    "type": "string"
+                },
+                "dept_no": {
+                    "type": "string"
+                },
+                "emp_no": {
+                    "type": "integer"
+                },
+                "first_name": {
+                    "type": "string",
+                    "maxLength": 14
+                },
+                "gender": {
+                    "type": "string",
+                    "enum": [
+                        "M",
+                        "F"
+                    ]
+                },
+                "hire_date": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string",
+                    "maxLength": 16
+                },
+                "salary": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
+        "schemas.PaginatedEmployeesResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/schemas.EmployeeSummaryResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                }
+            }
+        },
+        "schemas.SalaryResponse": {
+            "type": "object",
+            "properties": {
+                "from_date": {
+                    "type": "string"
+                },
+                "salary": {
+                    "type": "integer"
+                },
+                "to_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.TitleResponse": {
+            "type": "object",
+            "properties": {
+                "from_date": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "to_date": {
+                    "type": "string"
+                }
+            }
+        },
+        "schemas.UpdateEmployeeRequest": {
+            "type": "object",
+            "properties": {
+                "dept_no": {
+                    "type": "string"
+                },
+                "salary": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        }
+    }
+}
