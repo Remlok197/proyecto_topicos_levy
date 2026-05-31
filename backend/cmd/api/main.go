@@ -12,6 +12,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// @title Employees API
+// @version 1.0
+// @description API REST para la gestión de empleados (MySQl test_db).
+// @host localhost:8080
+// @BasePath /api
+
 func main() {
 	// 1. Conectar a la base de datos
 	db, err := config.ConnectDatabase()
