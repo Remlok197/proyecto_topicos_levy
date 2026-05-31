@@ -1,55 +1,10 @@
 import React, { useState } from 'react'
-import { Search, Mail, Pencil, Check, X, ChevronLeft, ChevronRight, User } from 'lucide-react'
+import { Search, Pencil, Check, X, ChevronLeft, ChevronRight, Loader2, AlertCircle } from 'lucide-react'
+import { useEmployees } from '../../hooks/useEmployees'
 
 export default function EmpleadosTable() {
-  // Mock data representing database employees
-  const [employees, setEmployees] = useState([
-    {
-      employeeNumber: 8492,
-      firstName: 'Elena',
-      lastName: 'Rodríguez',
-      department: 'IT',
-      jobTitle: 'Developer',
-      email: 'e.rodriguez@corp.com',
-      avatarColor: 'bg-teal-100 text-teal-700'
-    },
-    {
-      employeeNumber: 7310,
-      firstName: 'Marcus',
-      lastName: 'Chen',
-      department: 'IT',
-      jobTitle: 'Manager',
-      email: 'm.chen@corp.com',
-      avatarColor: 'bg-blue-100 text-blue-700'
-    },
-    {
-      employeeNumber: 9021,
-      firstName: 'Sarah',
-      lastName: 'Williams',
-      department: 'HR',
-      jobTitle: 'Specialist',
-      email: 's.williams@corp.com',
-      avatarColor: 'bg-purple-100 text-purple-700'
-    },
-    {
-      employeeNumber: 4219,
-      firstName: 'Daniel',
-      lastName: 'Gómez',
-      department: 'Sales',
-      jobTitle: 'Analyst',
-      email: 'd.gomez@corp.com',
-      avatarColor: 'bg-amber-100 text-amber-700'
-    },
-    {
-      employeeNumber: 5543,
-      firstName: 'Laura',
-      lastName: 'Martínez',
-      department: 'Finance',
-      jobTitle: 'Specialist',
-      email: 'l.martinez@corp.com',
-      avatarColor: 'bg-rose-100 text-rose-700'
-    }
-  ])
+  // Fetch employees from API using custom hook
+  const { employees, setEmployees, loading, error } = useEmployees()
 
   // Search filter state
   const [searchTerm, setSearchTerm] = useState('')
@@ -59,22 +14,12 @@ export default function EmpleadosTable() {
   const [editFormData, setEditFormData] = useState({
     firstName: '',
     lastName: '',
-    department: '',
     jobTitle: '',
-    email: ''
+    salary: ''
   })
 
   // Validation errors
   const [validationErrors, setValidationErrors] = useState({})
-
-  // Departments list
-  const departments = [
-    { value: 'HR', label: 'Recursos Humanos' },
-    { value: 'IT', label: 'Tecnología' },
-    { value: 'Sales', label: 'Ventas' },
-    { value: 'Finance', label: 'Finanzas' },
-    { value: 'Marketing', label: 'Mercadotecnia' }
-  ]
 
   // Roles list
   const roles = [
@@ -91,9 +36,8 @@ export default function EmpleadosTable() {
     setEditFormData({
       firstName: employee.firstName,
       lastName: employee.lastName,
-      department: employee.department,
       jobTitle: employee.jobTitle,
-      email: employee.email
+      salary: employee.salary
     })
     setValidationErrors({})
   }
@@ -120,13 +64,8 @@ export default function EmpleadosTable() {
     const errors = {}
     if (!editFormData.firstName.trim()) errors.firstName = true
     if (!editFormData.lastName.trim()) errors.lastName = true
-    if (!editFormData.department) errors.department = true
     if (!editFormData.jobTitle) errors.jobTitle = true
-    if (!editFormData.email.trim()) {
-      errors.email = true
-    } else if (!/\S+@\S+\.\S+/.test(editFormData.email)) {
-      errors.email = true
-    }
+    if (editFormData.salary === '' || isNaN(editFormData.salary) || Number(editFormData.salary) < 0) errors.salary = true
 
     if (Object.keys(errors).length > 0) {
       setValidationErrors(errors)
@@ -141,9 +80,8 @@ export default function EmpleadosTable() {
               ...emp,
               firstName: editFormData.firstName.trim(),
               lastName: editFormData.lastName.trim(),
-              department: editFormData.department,
               jobTitle: editFormData.jobTitle,
-              email: editFormData.email.trim()
+              salary: Number(editFormData.salary)
             }
           : emp
       )
@@ -162,18 +100,13 @@ export default function EmpleadosTable() {
   // Filter employees list
   const filteredEmployees = employees.filter((emp) => {
     const fullName = `${emp.firstName} ${emp.lastName}`.toLowerCase()
-    const deptLabel = (
-      departments.find((d) => d.value === emp.department)?.label || ''
-    ).toLowerCase()
-    const roleLabel = (roles.find((r) => r.value === emp.jobTitle)?.label || '').toLowerCase()
-    const email = emp.email.toLowerCase()
+    const roleLabel = (roles.find((r) => r.value === emp.jobTitle)?.label || emp.jobTitle).toLowerCase()
     const search = searchTerm.toLowerCase()
 
     return (
       fullName.includes(search) ||
-      deptLabel.includes(search) ||
       roleLabel.includes(search) ||
-      email.includes(search)
+      emp.employeeNumber.toString().includes(search)
     )
   })
 
@@ -212,14 +145,31 @@ export default function EmpleadosTable() {
           <thead>
             <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-secondary uppercase tracking-wider">
               <th className="px-6 py-3.5 w-1/4">Nombre del Empleado</th>
-              <th className="px-6 py-3.5 w-1/4">Puesto y Departamento</th>
-              <th className="px-6 py-3.5 w-1/4">Contacto</th>
-              <th className="px-6 py-3.5 w-1/8">Estado</th>
+              <th className="px-6 py-3.5 w-1/4">Puesto</th>
+              <th className="px-6 py-3.5 w-1/4">Salario</th>
               <th className="px-6 py-3.5 w-1/8 text-right">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm text-neutral">
-            {filteredEmployees.length > 0 ? (
+            {loading ? (
+              <tr>
+                <td colSpan="4" className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center text-primary/60">
+                    <Loader2 size={32} className="animate-spin mb-2" />
+                    <span className="text-sm font-medium">Cargando empleados...</span>
+                  </div>
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan="4" className="px-6 py-12 text-center">
+                  <div className="flex flex-col items-center justify-center text-red-500">
+                    <AlertCircle size={32} className="mb-2" />
+                    <span className="text-sm font-medium">{error}</span>
+                  </div>
+                </td>
+              </tr>
+            ) : filteredEmployees.length > 0 ? (
               filteredEmployees.map((emp) => {
                 const isEditing = editingId === emp.employeeNumber
 
@@ -275,74 +225,50 @@ export default function EmpleadosTable() {
                       </div>
                     </td>
 
-                    {/* Column 2: Job & Department */}
+                    {/* Column 2: JobTitle */}
                     <td className="px-6 py-4.5">
                       {isEditing ? (
-                        <div className="flex flex-col gap-1.5 max-w-[180px]">
-                          <select
-                            name="jobTitle"
-                            value={editFormData.jobTitle}
-                            onChange={handleEditChange}
-                            className={validationErrors.jobTitle ? errorInputClass : inputClass}
-                          >
-                            <option value="" disabled>
-                              Seleccionar Rol
+                        <select
+                          name="jobTitle"
+                          value={editFormData.jobTitle}
+                          onChange={handleEditChange}
+                          className={validationErrors.jobTitle ? errorInputClass : inputClass}
+                        >
+                          <option value="" disabled>
+                            Seleccionar Rol
+                          </option>
+                          {roles.map((r) => (
+                            <option key={r.value} value={r.value}>
+                              {r.label}
                             </option>
-                            {roles.map((r) => (
-                              <option key={r.value} value={r.value}>
-                                {r.label}
-                              </option>
-                            ))}
-                          </select>
-                          <select
-                            name="department"
-                            value={editFormData.department}
-                            onChange={handleEditChange}
-                            className={validationErrors.department ? errorInputClass : inputClass}
-                          >
-                            <option value="" disabled>
-                              Seleccionar Departamento
-                            </option>
-                            {departments.map((d) => (
-                              <option key={d.value} value={d.value}>
-                                {d.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
+                          ))}
+                        </select>
                       ) : (
-                        <div className="flex flex-col leading-tight">
-                          <span className="font-medium text-neutral">
-                            {roles.find((r) => r.value === emp.jobTitle)?.label || emp.jobTitle}
-                          </span>
-                          <span className="text-xs text-secondary mt-0.5">
-                            {departments.find((d) => d.value === emp.department)?.label ||
-                              emp.department}
-                          </span>
-                        </div>
+                        <span className="font-medium text-neutral">
+                          {roles.find((r) => r.value === emp.jobTitle)?.label || emp.jobTitle}
+                        </span>
                       )}
                     </td>
 
-                    {/* Column 3: Contact */}
+                    {/* Column 3: Salary */}
                     <td className="px-6 py-4.5">
                       {isEditing ? (
                         <input
-                          type="email"
-                          name="email"
-                          value={editFormData.email}
+                          type="number"
+                          name="salary"
+                          value={editFormData.salary}
                           onChange={handleEditChange}
-                          placeholder="e.rodriguez@corp.com"
+                          placeholder="Salario"
                           className={
-                            validationErrors.email
+                            validationErrors.salary
                               ? errorInputClass
-                              : `${inputClass} w-full max-w-[200px]`
+                              : `${inputClass} w-full max-w-[120px]`
                           }
                         />
                       ) : (
-                        <div className="flex items-center gap-1.5 text-secondary hover:text-neutral transition-colors">
-                          <Mail size={13} className="shrink-0 text-slate-400" />
-                          <span className="text-xs font-medium">{emp.email}</span>
-                        </div>
+                        <span className="text-sm font-medium text-neutral">
+                          ${emp.salary.toLocaleString()}
+                        </span>
                       )}
                     </td>
 
@@ -389,7 +315,7 @@ export default function EmpleadosTable() {
               })
             ) : (
               <tr>
-                <td colSpan="5" className="px-6 py-12 text-center text-secondary">
+                <td colSpan="4" className="px-6 py-12 text-center text-secondary">
                   No se encontraron empleados que coincidan con la búsqueda.
                 </td>
               </tr>

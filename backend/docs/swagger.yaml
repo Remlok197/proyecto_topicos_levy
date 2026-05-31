@@ -1,4 +1,4 @@
-basePath: /api
+basePath: /
 definitions:
   schemas.EmployeeDetailResponse:
     properties:
@@ -120,11 +120,11 @@ definitions:
 host: localhost:8080
 info:
   contact: {}
-  description: API REST para la gestión de empleados en el sistema (Práctica 3).
+  description: API REST para la gestión de empleados (MySQl test_db).
   title: Employees API
   version: "1.0"
 paths:
-  /employees:
+  /api/employees:
     get:
       description: Retorna los empleados con su salario y título actual, con paginación
         opcional
@@ -190,7 +190,7 @@ paths:
       summary: Registra un nuevo empleado
       tags:
       - employees
-  /employees/{id}:
+  /api/employees/{id}:
     delete:
       description: Da de baja a un empleado y cierra sus historiales de salario/título
       parameters:
